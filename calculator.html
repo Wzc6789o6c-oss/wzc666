@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工资计算器 - 个人所得税计算</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFF9F2;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text2: #6B7280;
+    --text3: #9CA3AF;
+    --sun: #F59E0B;
+    --sun-light: #FDE68A;
+    --warm: #F97316;
+    --green: #10B981;
+    --green-bg: #ECFDF5;
+    --orange-bg: #FFF7ED;
+    --border: #F3F4F6;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --radius: 14px;
+    --radius-lg: 20px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Subtle top glow */
+  body::before {
+    content: '';
+    position: fixed; top: -300px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 500px;
+    background: radial-gradient(circle, rgba(253,230,138,0.35) 0%, rgba(254,215,170,0.15) 40%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: relative; z-index: 1;
+    text-align: center; padding: 3rem 2rem 1.5rem;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    color: var(--text2); text-decoration: none;
+    font-size: 0.85rem; margin-bottom: 1.2rem; transition: color 0.2s;
+    font-weight: 500;
+  }
+  .back-link:hover { color: var(--warm); }
+  .header-icon {
+    font-size: 2.5rem; margin-bottom: 0.5rem;
+  }
+  .header-title {
+    font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 800;
+    color: var(--text); letter-spacing: -0.5px;
+  }
+  .header-title span {
+    background: linear-gradient(135deg, #F59E0B, #F97316);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-sub {
+    color: var(--text2); font-size: 0.9rem; margin-top: 0.3rem;
+    font-weight: 400;
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    position: relative; z-index: 1;
+    max-width: 1000px; margin: 0 auto; padding: 1rem 1.5rem 3rem;
+  }
+
+  /* ===== INPUT GRID ===== */
+  .input-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.25rem; margin-bottom: 1.5rem;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.75rem;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.3s;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-md);
+  }
+  .card h3 {
+    font-size: 1rem; font-weight: 700; color: var(--text);
+    margin-bottom: 1.4rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .card h3 .icon { font-size: 1.3rem; }
+
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block; font-size: 0.8rem; color: var(--text2);
+    margin-bottom: 0.3rem; font-weight: 500;
+  }
+  .field .hint {
+    font-size: 0.72rem; color: var(--text3); font-weight: 400;
+  }
+  .field input, .field select {
+    width: 100%; padding: 0.6rem 0.85rem;
+    background: #F9FAFB; border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: inherit; font-size: 0.9rem;
+    outline: none; transition: all 0.2s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: #FCD34D;
+    box-shadow: 0 0 0 3px rgba(252,211,77,0.15);
+    background: #FFF;
+  }
+  .field select {
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.85rem center;
+    background-color: #F9FAFB;
+  }
+
+  /* ===== SUMMARY ===== */
+  .summary {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 0.85rem; margin-bottom: 1.5rem;
+  }
+  .sum-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.1rem 0.8rem;
+    text-align: center; box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .sum-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .sum-item.tax-highlight {
+    background: var(--orange-bg); border-color: #FED7AA;
+  }
+  .sum-item.net-highlight {
+    background: var(--green-bg); border-color: #A7F3D0;
+  }
+  .sum-label {
+    font-size: 0.7rem; color: var(--text2); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem;
+  }
+  .sum-value {
+    font-size: 1.3rem; font-weight: 700; color: var(--text);
+  }
+  .tax-highlight .sum-value { color: #EA580C; }
+  .net-highlight .sum-value { color: #059669; }
+
+  /* ===== TABLE ===== */
+  .table-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .table-card h3 { color: var(--text); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+  .table-scroll { overflow-x: auto; border-radius: 10px; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    min-width: 750px;
+  }
+  thead th {
+    background: #FFFBEB; color: #92400E;
+    padding: 0.7rem 0.5rem; font-weight: 600; font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+    border-bottom: 2px solid #FDE68A;
+  }
+  thead th:first-child { border-radius: 8px 0 0 0; }
+  thead th:last-child { border-radius: 0 8px 0 0; }
+  tbody td {
+    padding: 0.6rem 0.5rem; text-align: center;
+    border-bottom: 1px solid #F9FAFB; white-space: nowrap;
+    color: var(--text);
+  }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: #FFFBEB; }
+  tbody tr.cur-month {
+    background: #FEF3C7; font-weight: 600;
+  }
+  tbody tr.cur-month td { color: #92400E; }
+  .tax-col { color: #EA580C; font-weight: 500; }
+  .net-col { color: #059669; font-weight: 600; }
+  tbody tr.cur-month .net-col { color: #047857; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    position: relative; z-index: 1;
+    text-align: center; padding: 1.5rem; color: var(--text3);
+    font-size: 0.78rem; border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--warm); text-decoration: none; font-weight: 500; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 850px) {
+    .input-grid { grid-template-columns: 1fr; }
+    .summary { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 550px) {
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    header { padding: 2rem 1rem 1rem; }
+    main { padding: 0.5rem 1rem 2rem; }
+    .card { padding: 1.25rem; }
+    .sum-value { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">&#8592; 返回个人网站</a>
+  <div class="header-icon">&#9728;&#65039;</div>
+  <h1 class="header-title">工资<span>计算器</span></h1>
+  <p class="header-sub">2025 中国个人所得税 &middot; 累计预扣法</p>
+</header>
+
+<main>
+  <!-- Inputs -->
+  <div class="input-grid">
+    <!-- Salary -->
+    <div class="card">
+      <h3><span class="icon">&#128176;</span> 收入与社保</h3>
+      <div class="field">
+        <label>税前月薪（元）</label>
+        <input type="number" id="grossSalary" value="15000" min="0" step="100">
+      </div>
+      <div class="field">
+        <label>社保缴纳基数 <span class="hint">&mdash; 通常与月薪相同</span></label>
+        <input type="number" id="socialBase" value="15000" min="0" step="100">
+      </div>
+      <div class="field">
+        <label>住房公积金比例</label>
+        <select id="housingFundRate">
+          <option value="0.05">5%</option>
+          <option value="0.07">7%</option>
+          <option value="0.08">8%</option>
+          <option value="0.10">10%</option>
+          <option value="0.12" selected>12%</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>计算月份</label>
+        <select id="curMonth">
+          <option value="1">1 月</option>
+          <option value="2">2 月</option>
+          <option value="3">3 月</option>
+          <option value="4">4 月</option>
+          <option value="5" selected>5 月（当前）</option>
+          <option value="6">6 月</option>
+          <option value="7">7 月</option>
+          <option value="8">8 月</option>
+          <option value="9">9 月</option>
+          <option value="10">10 月</option>
+          <option value="11">11 月</option>
+          <option value="12">12 月</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Deductions -->
+    <div class="card">
+      <h3><span class="icon">&#128221;</span> 专项附加扣除 <span style="font-weight:400;font-size:0.75rem;color:var(--text3);">元/月</span></h3>
+      <div class="field">
+        <label>&#128118; 子女教育 <span class="hint">2,000 元/月/孩</span></label>
+        <input type="number" id="deductChildren" value="0" min="0" step="2000">
+      </div>
+      <div class="field">
+        <label>&#128218; 继续教育 <span class="hint">400 元/月</span></label>
+        <input type="number" id="deductEdu" value="0" min="0" step="400">
+      </div>
+      <div class="field">
+        <label>&#127968; 住房贷款利息 <span class="hint">1,000 元/月</span></label>
+        <input type="number" id="deductHouse" value="0" min="0" step="1000">
+      </div>
+      <div class="field">
+        <label>&#127970; 住房租金 <span class="hint">800 / 1,100 / 1,500</span></label>
+        <input type="number" id="deductRent" value="0" min="0" step="100">
+      </div>
+      <div class="field">
+        <label>&#128104;&#8205;&#129457; 赡养老人 <span class="hint">最高 3,000 元/月</span></label>
+        <input type="number" id="deductElderly" value="0" min="0" step="1500">
+      </div>
+      <div class="field">
+        <label>&#127868; 婴幼儿照护 <span class="hint">2,000 元/月/孩</span></label>
+        <input type="number" id="deductInfant" value="0" min="0" step="2000">
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary" id="summary">
+    <div class="sum-item">
+      <div class="sum-label">五险一金 / 月</div>
+      <div class="sum-value" id="sFiveOne">&#8212;</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-label">专项扣除 / 月</div>
+      <div class="sum-value" id="sDeductions">&#8212;</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-label">累计应纳税所得额</div>
+      <div class="sum-value" id="sTaxable">&#8212;</div>
+    </div>
+    <div class="sum-item tax-highlight">
+      <div class="sum-label">本月个税</div>
+      <div class="sum-value" id="sTax">&#8212;</div>
+    </div>
+    <div class="sum-item net-highlight">
+      <div class="sum-label">本月税后到手</div>
+      <div class="sum-value" id="sNet">&#8212;</div>
+    </div>
+  </div>
+
+  <!-- Monthly Table -->
+  <div class="table-card">
+    <h3>&#128197; 全年各月明细（累计预扣法）</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>月份</th>
+            <th>累计收入</th>
+            <th>五险一金</th>
+            <th>累计应纳税所得额</th>
+            <th>适用税率</th>
+            <th>累计个税</th>
+            <th>当月个税</th>
+            <th class="net-col">税后到手</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>&copy; 2026 <a href="index.html">王志成</a> &middot; 数据仅供参考，实际以税务机关核定为准</p>
+</footer>
+
+<script>
+// ===== TAX CALCULATOR =====
+function getBracket(taxable) {
+  if (taxable <= 36000)  return { rate: 0.03, qd: 0,     label: '3%' };
+  if (taxable <= 144000) return { rate: 0.10, qd: 2520,  label: '10%' };
+  if (taxable <= 300000) return { rate: 0.20, qd: 16920, label: '20%' };
+  if (taxable <= 420000) return { rate: 0.25, qd: 31920, label: '25%' };
+  if (taxable <= 660000) return { rate: 0.30, qd: 52920, label: '30%' };
+  if (taxable <= 960000) return { rate: 0.35, qd: 85920, label: '35%' };
+  return                       { rate: 0.45, qd: 181920, label: '45%' };
+}
+
+function fmt(n) {
+  return '¥' + Math.round(Math.max(0, n)).toLocaleString('zh-CN');
+}
+
+function calc() {
+  const gross   = parseFloat(document.getElementById('grossSalary').value) || 0;
+  const base    = parseFloat(document.getElementById('socialBase').value) || 0;
+  const hfRate  = parseFloat(document.getElementById('housingFundRate').value) || 0;
+  const curM    = parseInt(document.getElementById('curMonth').value) || 1;
+
+  // 社保: 养老 8% + 医疗 2% + 失业 0.5% = 10.5%
+  const monthlySI = base * 0.105;
+  const monthlyHF = base * hfRate;
+  const monthlyFiveOne = monthlySI + monthlyHF;
+
+  const totalDed = ['deductChildren','deductEdu','deductHouse','deductRent','deductElderly','deductInfant']
+    .reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
+
+  const THRESHOLD = 5000;
+  let prevCumTax = 0;
+  const months = [];
+
+  for (let m = 1; m <= 12; m++) {
+    let cumTaxable = gross * m - monthlyFiveOne * m - THRESHOLD * m - totalDed * m;
+    if (cumTaxable < 0) cumTaxable = 0;
+
+    const b = getBracket(cumTaxable);
+    const cumTax = Math.max(0, cumTaxable * b.rate - b.qd);
+    const monthTax = Math.max(0, cumTax - prevCumTax);
+    const net = gross - monthlyFiveOne - monthTax;
+
+    months.push({
+      month: m, cumSalary: gross * m, fiveOne: monthlyFiveOne,
+      cumTaxable, rateLabel: b.label, cumTax, monthTax, net
+    });
+    prevCumTax = cumTax;
+  }
+
+  // Summary
+  const cur = months[curM - 1];
+  document.getElementById('sFiveOne').textContent = fmt(cur.fiveOne);
+  document.getElementById('sDeductions').textContent = fmt(totalDed);
+  document.getElementById('sTaxable').textContent = fmt(cur.cumTaxable);
+  document.getElementById('sTax').textContent = fmt(cur.monthTax);
+  document.getElementById('sNet').textContent = fmt(cur.net);
+
+  // Table
+  let html = '';
+  for (const m of months) {
+    const isCur = m.month === curM;
+    html += '<tr class="' + (isCur ? 'cur-month' : '') + '">';
+    html += '<td>' + m.month + '月' + (isCur ? ' &#9664;' : '') + '</td>';
+    html += '<td>' + fmt(m.cumSalary) + '</td>';
+    html += '<td>' + fmt(m.fiveOne) + '</td>';
+    html += '<td>' + fmt(m.cumTaxable) + '</td>';
+    html += '<td>' + m.rateLabel + '</td>';
+    html += '<td>' + fmt(m.cumTax) + '</td>';
+    html += '<td class="tax-col">' + fmt(m.monthTax) + '</td>';
+    html += '<td class="net-col">' + fmt(m.net) + '</td>';
+    html += '</tr>';
+  }
+  document.getElementById('tableBody').innerHTML = html;
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+calc();
+</script>
+</body>
+</html>
