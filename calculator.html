@@ -18,6 +18,8 @@
     --green: #10B981;
     --green-bg: #ECFDF5;
     --orange-bg: #FFF7ED;
+    --blue-bg: #EFF6FF;
+    --blue-text: #2563EB;
     --border: #F3F4F6;
     --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
@@ -37,7 +39,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Subtle top glow */
   body::before {
     content: '';
     position: fixed; top: -300px; left: 50%; transform: translateX(-50%);
@@ -58,9 +59,7 @@
     font-weight: 500;
   }
   .back-link:hover { color: var(--warm); }
-  .header-icon {
-    font-size: 2.5rem; margin-bottom: 0.5rem;
-  }
+  .header-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
   .header-title {
     font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 800;
     color: var(--text); letter-spacing: -0.5px;
@@ -92,9 +91,7 @@
     box-shadow: var(--shadow);
     transition: box-shadow 0.3s;
   }
-  .card:hover {
-    box-shadow: var(--shadow-md);
-  }
+  .card:hover { box-shadow: var(--shadow-md); }
   .card h3 {
     font-size: 1rem; font-weight: 700; color: var(--text);
     margin-bottom: 1.4rem; display: flex; align-items: center; gap: 0.5rem;
@@ -129,6 +126,18 @@
     background-color: #F9FAFB;
   }
 
+  /* City info bar */
+  .city-info {
+    background: var(--blue-bg); border: 1px solid #BFDBFE;
+    border-radius: 10px; padding: 0.75rem 1rem;
+    margin-top: 0.85rem; font-size: 0.75rem;
+    color: var(--blue-text); line-height: 1.7;
+    display: none;
+  }
+  .city-info.show { display: block; }
+  .city-info strong { color: #1E40AF; }
+  .city-info .sep { color: #93C5FD; margin: 0 0.4rem; }
+
   /* ===== SUMMARY ===== */
   .summary {
     display: grid; grid-template-columns: repeat(5, 1fr);
@@ -141,19 +150,13 @@
     transition: transform 0.2s, box-shadow 0.2s;
   }
   .sum-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-  .sum-item.tax-highlight {
-    background: var(--orange-bg); border-color: #FED7AA;
-  }
-  .sum-item.net-highlight {
-    background: var(--green-bg); border-color: #A7F3D0;
-  }
+  .sum-item.tax-highlight { background: var(--orange-bg); border-color: #FED7AA; }
+  .sum-item.net-highlight { background: var(--green-bg); border-color: #A7F3D0; }
   .sum-label {
     font-size: 0.7rem; color: var(--text2); font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem;
   }
-  .sum-value {
-    font-size: 1.3rem; font-weight: 700; color: var(--text);
-  }
+  .sum-value { font-size: 1.3rem; font-weight: 700; color: var(--text); }
   .tax-highlight .sum-value { color: #EA580C; }
   .net-highlight .sum-value { color: #059669; }
 
@@ -184,9 +187,7 @@
   }
   tbody tr { transition: background 0.15s; }
   tbody tr:hover { background: #FFFBEB; }
-  tbody tr.cur-month {
-    background: #FEF3C7; font-weight: 600;
-  }
+  tbody tr.cur-month { background: #FEF3C7; font-weight: 600; }
   tbody tr.cur-month td { color: #92400E; }
   .tax-col { color: #EA580C; font-weight: 500; }
   .net-col { color: #059669; font-weight: 600; }
@@ -221,23 +222,39 @@
   <a href="index.html" class="back-link">&#8592; 返回个人网站</a>
   <div class="header-icon">&#9728;&#65039;</div>
   <h1 class="header-title">工资<span>计算器</span></h1>
-  <p class="header-sub">2025 中国个人所得税 &middot; 累计预扣法</p>
+  <p class="header-sub">2025 中国个人所得税 &middot; 累计预扣法 &middot; 各城市社保政策</p>
 </header>
 
 <main>
   <!-- Inputs -->
   <div class="input-grid">
-    <!-- Salary -->
+    <!-- Salary & City -->
     <div class="card">
       <h3><span class="icon">&#128176;</span> 收入与社保</h3>
+      <div class="field">
+        <label>所在城市</label>
+        <select id="city">
+          <option value="beijing">北京</option>
+          <option value="shanghai">上海</option>
+          <option value="guangzhou">广州</option>
+          <option value="shenzhen">深圳</option>
+          <option value="hangzhou">杭州</option>
+          <option value="chengdu">成都</option>
+          <option value="wuhan">武汉</option>
+          <option value="nanjing">南京</option>
+          <option value="chongqing">重庆</option>
+          <option value="custom">其他城市（自定义）</option>
+        </select>
+      </div>
       <div class="field">
         <label>税前月薪（元）</label>
         <input type="number" id="grossSalary" value="15000" min="0" step="100">
       </div>
       <div class="field">
-        <label>社保缴纳基数 <span class="hint">&mdash; 通常与月薪相同</span></label>
+        <label>社保/公积金缴纳基数（元）<span class="hint">&mdash; 自动按城市上下限调整</span></label>
         <input type="number" id="socialBase" value="15000" min="0" step="100">
       </div>
+      <div class="city-info" id="cityInfo"></div>
       <div class="field">
         <label>住房公积金比例</label>
         <select id="housingFundRate">
@@ -345,10 +362,96 @@
 </main>
 
 <footer>
-  <p>&copy; 2026 <a href="index.html">王志成</a> &middot; 数据仅供参考，实际以税务机关核定为准</p>
+  <p>&copy; 2026 <a href="index.html">王志成</a> &middot; 社保政策参考各地 2024-2025 年官方公布数据，实际以当地社保局核定为准</p>
 </footer>
 
 <script>
+// ===== CITY POLICIES (2024-2025) =====
+// 社保个人缴费比例: 养老 8% + 医疗 2% + 失业 (各有不同)
+// 工伤保险和生育保险仅单位缴纳，个人不缴
+const CITY_POLICIES = {
+  beijing: {
+    name: '北京',
+    siMin: 6821, siMax: 35283,
+    hfMin: 2420, hfMax: 35283,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 3,  // 北京医保每月额外 +3 元
+    rentDeduct: 1500  // 住房租金扣除标准
+  },
+  shanghai: {
+    name: '上海',
+    siMin: 7384, siMax: 36921,
+    hfMin: 2690, hfMax: 36921,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  guangzhou: {
+    name: '广州',
+    siMin: 5284, siMax: 26421,
+    hfMin: 2300, hfMax: 39579,
+    pension: 0.08, medical: 0.02, unemployment: 0.002,  // 广州失业 0.2%
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  shenzhen: {
+    name: '深圳',
+    siMin: 3523, siMax: 26421,  // 养老保险基数，医保基数另算（一档）
+    hfMin: 2360, hfMax: 43659,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  hangzhou: {
+    name: '杭州',
+    siMin: 4462, siMax: 24060,
+    hfMin: 2490, hfMax: 38382,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  chengdu: {
+    name: '成都',
+    siMin: 4246, siMax: 21228,
+    hfMin: 2100, hfMax: 31378,
+    pension: 0.08, medical: 0.02, unemployment: 0.004,  // 成都失业 0.4%
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  wuhan: {
+    name: '武汉',
+    siMin: 4224, siMax: 21120,
+    hfMin: 2210, hfMax: 33099,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  nanjing: {
+    name: '南京',
+    siMin: 4494, siMax: 24042,
+    hfMin: 2490, hfMax: 38700,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  chongqing: {
+    name: '重庆',
+    siMin: 4358, siMax: 21789,
+    hfMin: 2100, hfMax: 29356,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  },
+  custom: {
+    name: '自定义',
+    siMin: 0, siMax: Infinity,
+    hfMin: 0, hfMax: Infinity,
+    pension: 0.08, medical: 0.02, unemployment: 0.005,
+    medicalExtra: 0,
+    rentDeduct: 1500
+  }
+};
+
 // ===== TAX CALCULATOR =====
 function getBracket(taxable) {
   if (taxable <= 36000)  return { rate: 0.03, qd: 0,     label: '3%' };
@@ -364,14 +467,74 @@ function fmt(n) {
   return '¥' + Math.round(Math.max(0, n)).toLocaleString('zh-CN');
 }
 
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
+
+function updateCityInfo() {
+  const cityId = document.getElementById('city').value;
+  const policy = CITY_POLICIES[cityId];
+  const infoEl = document.getElementById('cityInfo');
+
+  if (cityId === 'custom') {
+    infoEl.className = 'city-info';
+    return;
+  }
+
+  const siRange = '¥' + policy.siMin.toLocaleString() + ' ~ ¥' + policy.siMax.toLocaleString();
+  const hfRange = '¥' + policy.hfMin.toLocaleString() + ' ~ ¥' + policy.hfMax.toLocaleString();
+
+  let extraInfo = '';
+  if (policy.unemployment !== 0.005) {
+    const pct = (policy.unemployment * 100).toFixed(1);
+    extraInfo += '<span class="sep">|</span>失业保险: ' + pct + '%';
+  }
+  if (policy.medicalExtra > 0) {
+    extraInfo += '<span class="sep">|</span>医保附加: ¥' + policy.medicalExtra + '/月';
+  }
+
+  infoEl.innerHTML =
+    '<strong>社保基数:</strong> ' + siRange +
+    ' <span class="sep">|</span> <strong>公积金基数:</strong> ' + hfRange +
+    extraInfo +
+    '<br><span style="color:#6B7280;">个人缴费合计: 养老8% + 医疗2% + 失业' + (policy.unemployment * 100).toFixed(1) + '% + 公积金(自选)</span>';
+
+  infoEl.className = 'city-info show';
+}
+
+function onCityChange() {
+  updateCityInfo();
+
+  const cityId = document.getElementById('city').value;
+  const policy = CITY_POLICIES[cityId];
+
+  // Auto-clamp social insurance base to city limits
+  const baseInput = document.getElementById('socialBase');
+  let baseVal = parseFloat(baseInput.value) || 0;
+  if (cityId !== 'custom' && baseVal > 0) {
+    baseVal = clamp(baseVal, policy.siMin, policy.siMax);
+    baseInput.value = baseVal;
+  }
+
+  calc();
+}
+
 function calc() {
+  const cityId  = document.getElementById('city').value;
+  const policy  = CITY_POLICIES[cityId];
   const gross   = parseFloat(document.getElementById('grossSalary').value) || 0;
-  const base    = parseFloat(document.getElementById('socialBase').value) || 0;
+  let   base    = parseFloat(document.getElementById('socialBase').value) || 0;
   const hfRate  = parseFloat(document.getElementById('housingFundRate').value) || 0;
   const curM    = parseInt(document.getElementById('curMonth').value) || 1;
 
-  // 社保: 养老 8% + 医疗 2% + 失业 0.5% = 10.5%
-  const monthlySI = base * 0.105;
+  // Clamp base to city limits
+  if (cityId !== 'custom') {
+    base = clamp(base, policy.siMin, policy.siMax);
+  }
+
+  // 社保个人部分 = 养老 + 医疗 + 失业
+  const siRate = policy.pension + policy.medical + policy.unemployment;
+  const monthlySI = base * siRate + policy.medicalExtra; // 北京额外 +3
   const monthlyHF = base * hfRate;
   const monthlyFiveOne = monthlySI + monthlyHF;
 
@@ -424,10 +587,17 @@ function calc() {
   document.getElementById('tableBody').innerHTML = html;
 }
 
+// Bind events
+document.getElementById('city').addEventListener('change', onCityChange);
 document.querySelectorAll('input, select').forEach(el => {
-  el.addEventListener('input', calc);
-  el.addEventListener('change', calc);
+  if (el.id !== 'city') {
+    el.addEventListener('input', calc);
+    el.addEventListener('change', calc);
+  }
 });
+
+// Init
+updateCityInfo();
 calc();
 </script>
 </body>
